@@ -10,7 +10,6 @@ app = Flask(__name__)
 #load the config
 app.config.from_object(__name__)
 
-@app.route("/")
 
 # connect to database
 def connect_db():
@@ -27,7 +26,20 @@ def init_db():
             db.cursor().executescript(f.read())
         db.commit()
 
+# open database connection
+def get_db():
+    if not hasattr(g, "sqlite_db"):
+        g.sqlite_db = connect_db()
+    return g.sqlite_db
 
+# close database connection
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(g, "sqlite_db"):
+        g.sqlite_db.close()
+
+
+@app.route("/")
 def hello():
     return "Hello, World!"
 
